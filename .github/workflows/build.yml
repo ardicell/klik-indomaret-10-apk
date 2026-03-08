@@ -1,0 +1,85 @@
+name: Build 10 APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Install Android SDK
+      uses: android-actions/setup-android@v2
+
+    - name: Generate Projects
+      run: |
+
+        for i in {1..10}
+        do
+        mkdir -p app$i/src/main/java/com/wrapper/app$i
+
+        cat <<EOF > app$i/src/main/AndroidManifest.xml
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.wrapper.app$i">
+
+        <application android:label="$i">
+
+        <activity android:name=".MainActivity" android:exported="true">
+        <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+        </intent-filter>
+        </activity>
+
+        </application>
+        </manifest>
+        EOF
+
+        cat <<EOF > app$i/src/main/java/com/wrapper/app$i/MainActivity.java
+        package com.wrapper.app$i;
+
+        import android.app.Activity;
+        import android.content.Intent;
+        import android.os.Bundle;
+
+        public class MainActivity extends Activity {
+
+        protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        try {
+
+        Intent intent = new Intent();
+        intent.setClassName(
+        "com.indomaret.klikindomaret",
+        "edts.klikidm.android.feature_home.ui.v2.HomeV2Activity"
+        );
+
+        startActivity(intent);
+
+        } catch (Exception e) {}
+
+        finish();
+        }
+        }
+        EOF
+
+        done
+
+    - name: Zip result
+      run: zip -r wrappers.zip app*
+
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: wrappers
+        path: wrappers.zip
