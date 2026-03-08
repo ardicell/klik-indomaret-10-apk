@@ -12,35 +12,33 @@ jobs:
         app: [1,2,3,4,5,6,7,8,9,10]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Setup JDK
-        uses: actions/setup-java@v3
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Android
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Create Project
+      - name: Generate Android Project
         run: |
 
           mkdir -p app/src/main/java/com/app${{matrix.app}}
+          mkdir -p app/src/main/res/values
 
           cat <<EOF > app/src/main/AndroidManifest.xml
           <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.app${{matrix.app}}">
-
           <application android:label="${{matrix.app}}">
-
           <activity android:name=".MainActivity" android:exported="true">
           <intent-filter>
           <action android:name="android.intent.action.MAIN"/>
           <category android:name="android.intent.category.LAUNCHER"/>
           </intent-filter>
           </activity>
-
           </application>
           </manifest>
           EOF
@@ -74,11 +72,10 @@ jobs:
           }
           EOF
 
-      - name: Build APK
+      - name: Fake compile APK
         run: |
-          gradle init --type basic
           mkdir outputs
-          echo "fake build placeholder" > outputs/${{matrix.app}}.apk
+          echo "APK ${{matrix.app}}" > outputs/${{matrix.app}}.apk
 
       - name: Upload
         uses: actions/upload-artifact@v4
